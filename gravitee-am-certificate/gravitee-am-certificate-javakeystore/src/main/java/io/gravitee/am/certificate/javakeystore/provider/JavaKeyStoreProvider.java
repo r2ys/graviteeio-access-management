@@ -194,5 +194,8 @@ public class JavaKeyStoreProvider implements CertificateProvider, InitializingBe
                 .orElse(Signature.SHA256withRSA);
     }
 
-
+    @Override
+    public String signatureAlgorithm() {
+        return signature.getJwsAlgorithm().getName();
+    }
 }

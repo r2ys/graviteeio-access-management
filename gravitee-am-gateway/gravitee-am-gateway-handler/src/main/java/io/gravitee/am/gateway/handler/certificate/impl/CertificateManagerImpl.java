@@ -227,6 +227,21 @@ public class CertificateManagerImpl extends AbstractService implements Certifica
             }
 
             @Override
+            public String signatureAlgorithm() {
+                int keySize = key.getValue().toString().getBytes().length*8;
+                if(keySize>=512) {
+                    return "HS512";
+                }
+                else if(keySize>=384) {
+                    return "HS384";
+                }
+                else if(keySize>=256) {
+                    return "HS256";
+                }
+                return null;
+            }
+
+            @Override
             public CertificateMetadata certificateMetadata() {
                 return certificateMetadata;
             }

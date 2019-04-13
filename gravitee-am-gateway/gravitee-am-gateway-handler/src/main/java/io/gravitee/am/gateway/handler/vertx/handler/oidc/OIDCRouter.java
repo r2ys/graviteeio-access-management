@@ -25,6 +25,7 @@ import io.gravitee.am.gateway.handler.vertx.handler.oidc.endpoint.*;
 import io.gravitee.am.gateway.handler.vertx.handler.oidc.handler.DynamicClientAccessHandler;
 import io.gravitee.am.gateway.handler.vertx.handler.oidc.handler.DynamicClientRegistrationHandler;
 import io.gravitee.am.gateway.handler.vertx.handler.oidc.handler.UserInfoRequestParseHandler;
+import io.gravitee.am.gateway.handler.vertx.handler.oidc.handler.UserinfoResponseHandler;
 import io.gravitee.am.model.Domain;
 import io.gravitee.am.service.ClientService;
 import io.gravitee.am.service.UserService;
@@ -100,16 +101,19 @@ public class OIDCRouter {
         // UserInfo Endpoint
         Handler<RoutingContext> userInfoEndpoint = new UserInfoEndpoint(userService);
         Handler<RoutingContext> userInfoRequestParseHandler = new UserInfoRequestParseHandler(tokenService, clientSyncService, jwtService);
+        Handler<RoutingContext> userInfoResponseHandler = new UserinfoResponseHandler(clientSyncService, jwtService);
         router.route("/userinfo").handler(CorsHandler.newInstance(corsHandler()));
         router
                 .route(HttpMethod.GET, "/userinfo")
                 .handler(userInfoRequestParseHandler)
-                .handler(userInfoEndpoint);
+                .handler(userInfoEndpoint)
+                .handler(userInfoResponseHandler);
         router
                 .route(HttpMethod.POST, "/userinfo")
                 .consumes(MediaType.APPLICATION_FORM_URLENCODED)
                 .handler(userInfoRequestParseHandler)
-                .handler(userInfoEndpoint);
+                .handler(userInfoEndpoint)
+                .handler(userInfoResponseHandler);
 
         // OpenID Provider JWK Set
         Handler<RoutingContext> openIDProviderJWKSetEndpoint = new ProviderJWKSetEndpoint();

@@ -22,10 +22,9 @@ import io.gravitee.am.gateway.handler.oauth2.exception.InvalidRequestException;
 import io.gravitee.am.gateway.handler.oauth2.exception.InvalidTokenException;
 import io.gravitee.am.gateway.handler.oauth2.token.Token;
 import io.gravitee.am.gateway.handler.oauth2.token.impl.AccessToken;
+import io.gravitee.am.gateway.handler.oauth2.utils.OIDCParameters;
 import io.gravitee.am.gateway.handler.oidc.request.ClaimsRequest;
 import io.gravitee.am.service.UserService;
-import io.gravitee.common.http.HttpHeaders;
-import io.gravitee.common.http.MediaType;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -90,15 +89,19 @@ public class UserInfoEndpoint implements Handler<RoutingContext> {
                     return (requestForSpecificClaims) ? requestedClaims : userClaims;
                  })
                 .subscribe(
-                        claims -> context.response()
-                                .putHeader(HttpHeaders.CACHE_CONTROL, "no-store")
-                                .putHeader(HttpHeaders.PRAGMA, "no-cache")
-                                .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                                .end(Json.encodePrettily(claims)),
-                        error -> context.fail(error),
-                        () -> context.fail(new InvalidTokenException("No user found for this token"))
+                        claims -> {
+                            context.put(OIDCParameters.CLAIMS, claims);
+                            context.next();
+                        },
+                        error -> {
+                            context.fail(error);
+                            return;
+                        },
+                        () -> {
+                            context.fail(new InvalidTokenException("No user found for this token"));
+                            return;
+                        }
                 );
-
     }
 
     /**

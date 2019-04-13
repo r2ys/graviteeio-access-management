@@ -45,7 +45,7 @@
     </issueManagement>
 
     <properties>
-        <gravitee-common.version>1.13.0</gravitee-common.version>
+        <gravitee-common.version>1.15.0-SNAPSHOT</gravitee-common.version>
         <gravitee-plugin-core.version>1.4.0</gravitee-plugin-core.version>
         <gravitee-node.version>1.1.0</gravitee-node.version>
         <spring-security.version>4.2.4.RELEASE</spring-security.version>

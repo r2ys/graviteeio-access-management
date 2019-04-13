@@ -21,7 +21,10 @@ import io.gravitee.am.gateway.handler.certificate.CertificateManager;
 import io.gravitee.am.gateway.handler.certificate.CertificateProvider;
 import io.gravitee.am.gateway.handler.jwt.JwtService;
 import io.gravitee.am.gateway.handler.oauth2.exception.InvalidTokenException;
+import io.gravitee.am.gateway.handler.oidc.utils.JWKSetUtils;
 import io.gravitee.am.model.Client;
+import io.gravitee.am.model.jose.JWK;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Titouan COMPIEGNE (titouan.compiegne at graviteesource.com)
@@ -56,6 +61,21 @@ public class JwtServiceImpl implements JwtService {
         return certificateManager.get(client.getCertificate())
                 .defaultIfEmpty(certificateManager.defaultCertificateProvider())
                 .flatMapSingle(certificateProvider -> encode(jwt, certificateProvider));
+    }
+
+    @Override
+    public Single<String> encodeUserinfo(JWT jwt, Client client) {
+        CertificateProvider certificate = certificateManager
+                .providers()
+                .stream()
+                .filter(certificateProvider ->
+                        client.getUserinfoSignedResponseAlg()!=null &&
+                        client.getUserinfoSignedResponseAlg().equals(certificateProvider.getProvider().signatureAlgorithm())
+                )
+                .findFirst()
+                .orElse(certificateManager.defaultCertificateProvider());
+
+        return encode(jwt, certificate);
     }
 
     @Override
